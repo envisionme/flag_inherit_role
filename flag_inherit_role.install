@@ -1,0 +1,13 @@
+<?php
+/**
+ * @file
+ * Installation file for the flag inherit role module.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function flag_inherit_role_uninstall() {
+  variable_del('flag_inherit_role_roles');
+  variable_del('flag_inherit_role_flag_type');
+}

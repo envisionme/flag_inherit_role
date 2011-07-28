@@ -1,0 +1,53 @@
+<?php
+/**
+ * Implementation of hook_help ().
+ */
+function flag_inherit_role_help($path, $args) {
+  if ($path == 'admin/help#flag-inherit-role') {
+    $output = '<p>Allows a user to flag another user and thus allowing the flagged user to inherit the flagging users roles.</p>';
+    return $output;
+  }
+}
+
+/**
+ * Implementation of hook_menu ().
+ */
+function flag_inherit_role_menu() {   
+  $items['admin/build/flags/flag_inherit_role'] = array(
+    'title' => 'Flag inherit role',
+    'description' => 'Configure the autocomplete flag select.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('flag_inherit_role_settings_form'),
+    'access arguments' => array(1),
+    'file' => 'flag_inherit_role.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_flag
+ */
+function flag_inherit_role_flag($action, $flag, $content_id, $account) {
+  global $user;
+  if (!user_access(''))
+    return;
+  $rids = variable_get('flag_inherit_role_roles', array());
+  $flag_type = variable_get('flag_inherit_role_flag_type', 0);
+  
+  $roles_to_inherit = array_intersect_key($user->roles, $rids);
+  switch ($action) {
+    case 'flag':
+      if ($flag->fid == $flag_type) {
+        foreach($roles_to_inherit AS $rid => $role)
+          db_query("INSERT INTO {users_roles} (rid, uid) VALUES ('%d','%d')", $rid, $content_id);
+      }
+      break;
+      
+    case 'unflag':
+      if ($flag->fid == $flag_type) {
+        foreach($roles_to_inherit AS $rid => $role)
+          db_query("DELETE FROM {users_roles} WHERE rid = %d AND uid = %d", $rid, $content_id);
+      }
+      break;
+  }
+}

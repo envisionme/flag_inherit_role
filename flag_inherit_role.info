@@ -1,0 +1,4 @@
+name = "Flag inherit role"
+description = "When user has been flagged, user gets parent role permission"
+package = "User interface"
+core = 6.x
