@@ -10,6 +10,13 @@ function flag_inherit_role_help($path, $args) {
 }
 
 /**
+ * Implementation of hook_perm ().
+ */
+function flag_inherit_role_perm() {
+  return array('allow flag inherit role access',  'administer access to flag inherit role');
+}
+
+/**
  * Implementation of hook_menu ().
  */
 function flag_inherit_role_menu() {   
@@ -18,18 +25,26 @@ function flag_inherit_role_menu() {
     'description' => 'Configure the autocomplete flag select.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('flag_inherit_role_settings_form'),
+    'access callback' => 'flag_inherit_role_access',
     'access arguments' => array(1),
     'file' => 'flag_inherit_role.admin.inc',
   );
   return $items;
 }
 
+function flag_inherit_role_access($nid = 0) {
+  global $user;
+  // get the node author UID
+  $result = db_query('SELECT n.uid FROM {node} n WHERE n.nid = %d LIMIT 1', $nid);
+  $uid = db_fetch_array($result);
+  return (user_access('allow flag inherit role access') && $uid == $user->uid) || user_access('administer access to flag inherit role');
+}
 /**
  * Implementation of hook_flag
  */
 function flag_inherit_role_flag($action, $flag, $content_id, $account) {
   global $user;
-  if (!user_access(''))
+  if (!user_access('allow flag inherit role access'))
     return;
   $rids = variable_get('flag_inherit_role_roles', array());
   $flag_type = variable_get('flag_inherit_role_flag_type', 0);
