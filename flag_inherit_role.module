@@ -47,20 +47,25 @@ function flag_inherit_role_flag($action, $flag, $content_id, $account) {
   if (!user_access('allow flag inherit role access'))
     return;
   $rids = variable_get('flag_inherit_role_roles', array());
+  // remove unchecked roles
+  foreach($rids as $rid => $value) {
+    if ($value == 0)
+      unset($rids[$rid]);
+  }
   $flag_type = variable_get('flag_inherit_role_flag_type', 0);
-  
+  // find similar roles
   $roles_to_inherit = array_intersect_key($user->roles, $rids);
   switch ($action) {
     case 'flag':
       if ($flag->fid == $flag_type) {
-        foreach($roles_to_inherit AS $rid => $role)
+        foreach(array_keys($roles_to_inherit) AS $rid)
           db_query("INSERT INTO {users_roles} (rid, uid) VALUES ('%d','%d')", $rid, $content_id);
       }
       break;
       
     case 'unflag':
       if ($flag->fid == $flag_type) {
-        foreach($roles_to_inherit AS $rid => $role)
+        foreach(array_keys($roles_to_inherit) AS $rid)
           db_query("DELETE FROM {users_roles} WHERE rid = %d AND uid = %d", $rid, $content_id);
       }
       break;
